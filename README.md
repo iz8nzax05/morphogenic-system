@@ -6,7 +6,7 @@ A real-time 3D voxel morphing engine exploring mathematical feedback loops throu
 
 ## The three stages
 
-### Stage 1 — `01_Voxel_Base/voxel_morphing_system.py`
+### Stage 1a — `01_Voxel_Base/voxel_morphing_system.py`
 2D wireframe visualization of a 32×32×32 voxel grid driven by sine wave interference.
 
 - Three orthogonal sine waves combine with phase offsets to create a dynamic field
@@ -15,7 +15,7 @@ A real-time 3D voxel morphing engine exploring mathematical feedback loops throu
 - Dual view: 3D wireframe or 2D cross-section slice
 - Numba JIT-compiled core for performance on the full 32,768-voxel grid
 
-### Stage 1 — `01_Voxel_Base/voxel_morphing_3d.py`
+### Stage 1b — `01_Voxel_Base/voxel_morphing_3d.py`
 Same system, upgraded to full 3D solid rendering via ModernGL.
 
 - GPU instanced rendering — one 24-vertex cube mesh drawn up to 32,768 times per frame

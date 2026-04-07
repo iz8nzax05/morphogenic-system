@@ -1,0 +1,88 @@
+#version 430 core
+
+// Compute shader for generating 3D shape fields
+// Replaces CPU-side generate_shape_field_at_position function
+
+layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+layout(r32f, binding = 0) uniform image3D shape_field;  // Single float per voxel
+
+uniform int grid_size;
+uniform int shape_type;  // 0=sphere, 1=cube, 2=pyramid
+uniform vec3 shape_center;  // Normalized center position in grid space
+uniform float shape_scale;
+
+// Shape field calculation (matches CPU implementation)
+float shape_field_direct(float nx, float ny, float nz, int shape) {
+    float dist = length(vec3(nx, ny, nz));
+    
+    if (shape == 0) {  // sphere
+        float radius = 0.65 * shape_scale;
+        float shape_value = 1.0 - (dist / radius);
+        // Sharpen the edge slightly for better definition
+        if (shape_value > 0.5) {
+            shape_value = 0.5 + (shape_value - 0.5) * 1.2;
+        }
+        return clamp(shape_value, 0.0, 1.0);
+    }
+    else if (shape == 1) {  // cube
+        float size = 0.55 * shape_scale;
+        float max_dist = max(max(abs(nx), abs(ny)), abs(nz));
+        float shape_value = 1.0 - (max_dist / size);
+        // Sharpen cube edges for better definition
+        if (shape_value > 0.3) {
+            shape_value = 0.3 + (shape_value - 0.3) * 1.4;
+        }
+        return clamp(shape_value, 0.0, 1.0);
+    }
+    else if (shape == 2) {  // pyramid
+        float base_size = 0.65 * shape_scale;
+        float height = 0.85 * shape_scale;
+        float base_dist = max(abs(nx), abs(nz));
+        float normalized_y = (ny + 1.0) / 2.0;
+        float current_base = base_size * (1.0 - normalized_y * 0.85);
+        if (current_base > 0.0 && ny <= height && ny >= -0.5) {
+            float shape_value = 1.0 - (base_dist / current_base);
+            // Sharpen pyramid for better definition
+            if (shape_value > 0.3) {
+                shape_value = 0.3 + (shape_value - 0.3) * 1.3;
+            }
+            return clamp(shape_value, 0.0, 1.0);
+        }
+        return 0.0;
+    }
+    
+    return 0.0;
+}
+
+void main() {
+    ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
+    
+    // Avoid out-of-bounds writes
+    if (pos.x >= grid_size || pos.y >= grid_size || pos.z >= grid_size)
+        return;
+    
+    // Calculate position relative to shape center
+    float center = float(grid_size) / 2.0;
+    float rel_x = float(pos.x) - (shape_center.x * float(grid_size));
+    float rel_y = float(pos.y) - (shape_center.y * float(grid_size));
+    float rel_z = float(pos.z) - (shape_center.z * float(grid_size));
+    
+    // Normalize to -1 to 1 range
+    float nx = rel_x / center;
+    float ny = rel_y / center;
+    float nz = rel_z / center;
+    
+    // Early exit optimization: skip if too far
+    float dist = length(vec3(nx, ny, nz));
+    if (dist > 1.5) {
+        imageStore(shape_field, pos, vec4(0.0, 0.0, 0.0, 0.0));
+        return;
+    }
+    
+    // Calculate shape value
+    float shape_value = shape_field_direct(nx, ny, nz, shape_type);
+    
+    // Write to 3D image
+    imageStore(shape_field, pos, vec4(shape_value, 0.0, 0.0, 0.0));
+}

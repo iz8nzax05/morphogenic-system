@@ -68,20 +68,20 @@ python constellation_system.py
 
 ```
 01_Voxel_Base/
-├── voxel_morphing_system.py   # 2D wireframe + sine wave field (408 lines)
-├── voxel_morphing_3d.py       # 3D GPU instanced solid rendering (671 lines)
+├── voxel_morphing_system.py   # 2D wireframe + sine wave field (393 lines)
+├── voxel_morphing_3d.py       # 3D GPU instanced solid rendering (643 lines)
 ├── voxel_shaders.frag/.vert   # GLSL shaders for 3D version
 └── requirements.txt
 
 02_Constellation/
-├── constellation_system.py    # Multi-target morphing engine (1,480 lines)
-├── shape_library.py           # 6 Numba-compiled shape field functions (152 lines)
-├── wireframe_generator.py     # Parametric wireframe geometry (198 lines)
-├── compute_field_generator.py # GPU compute shader + CPU fallback (247 lines)
+├── constellation_system.py    # Multi-target morphing engine (1,440 lines)
+├── shape_library.py           # 6 Numba-compiled shape field functions (127 lines)
+├── wireframe_generator.py     # Parametric wireframe geometry (182 lines)
+├── compute_field_generator.py # GPU compute shader + CPU fallback (243 lines)
 └── shaders/                   # GLSL compute + render shaders
 ```
 
-**~3,150 lines total.**
+**~3,300 lines total.**
 
 ---
 
